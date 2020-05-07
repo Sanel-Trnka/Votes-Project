@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Votes">
+    <output-path>$USER_HOME$/Documents/Mc-Servers/1.12.2/plugins</output-path>
+    <root id="archive" name="Votes.jar">
+      <element id="module-output" name="Votes" />
+      <element id="file-copy" path="$PROJECT_DIR$/src/plugin.yml" />
+    </root>
+  </artifact>
+</component>

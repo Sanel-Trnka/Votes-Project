@@ -1,15 +1,41 @@
 package de.discordbot;
 
-import net.md_5.bungee.api.plugin.Plugin;
 
-public class Votes extends Plugin {
+import de.discordbot.manager.ConfigurationManager;
+import de.discordbot.manager.MySqlManager;
+import org.bukkit.ChatColor;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class Votes extends JavaPlugin {
+
+    private static ConfigurationManager configManager;
+    private static String prefix = "[Votes] ";
+    private MySqlManager mySql;
+
+    public static ConfigurationManager getConfigManager(){
+        return configManager;
+    }
+
+    public static String getPrefix(){
+        return prefix;
+    }
 
     public void onEnable() {
-        getLogger().info("§aDas Votes-Plugin wurde aktiviert!");
+
+        setupConfigurations();
+        getServer().getConsoleSender().sendMessage(ChatColor.GREEN + getPrefix() + "Das Votes-Plugin wurde aktiviert!");
+        mySql = new MySqlManager();
+
     }
 
     public void onDisable() {
-        getLogger().info("§cDas Votes-Plugin wurde deaktiviert!");
+        getServer().getConsoleSender().sendMessage(ChatColor.RED + getPrefix() + "Das Votes-Plugin wurde deaktiviert!");
+    }
+
+    // Methode um die Configurationen zu laden
+    private void setupConfigurations(){
+        configManager = new ConfigurationManager();
+        configManager.setup();
     }
 
 }
