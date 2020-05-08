@@ -13,13 +13,12 @@ import java.util.HashMap;
 public class ConfigurationManager {
 
     private Votes plugin = Votes.getPlugin(Votes.class);
-    // START (Files und File Config)
+    // Erstellen der Files und der FileConfigs
     public FileConfiguration mySqlCfg;
     public File mySqlFile;
 
     public FileConfiguration langCfg;
     public File langFile;
-    // END
 
     // Config-Files werden hier deklariert und Startklar gemacht
     public void setup(){
@@ -86,7 +85,7 @@ public class ConfigurationManager {
 
     // Lädt die Standartwerte
     private void loadDefaultLang(){
-        langCfg.addDefault("host", "127.0.0.1");
+        langCfg.addDefault("rewardsInventory.title", "Rewards");
         langCfg.options().copyDefaults(true);
         try{
             langCfg.save(langFile);
@@ -96,6 +95,7 @@ public class ConfigurationManager {
         }
     }
 
+    // Gibt einen Wert der Configurationen zurück
     public Object getConfigurationEntry(String cfgType, String path){
         if(cfgType.equalsIgnoreCase("mySql")){
             return mySqlCfg.get(path);
