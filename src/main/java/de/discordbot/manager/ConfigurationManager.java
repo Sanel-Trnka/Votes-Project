@@ -20,6 +20,9 @@ public class ConfigurationManager {
     public FileConfiguration langCfg;
     public File langFile;
 
+    public FileConfiguration configCfg;
+    public File configFile;
+
     // Config-Files werden hier deklariert und Startklar gemacht
     public void setup(){
         if(!plugin.getDataFolder().exists()){
@@ -28,6 +31,7 @@ public class ConfigurationManager {
 
         mySqlFile = new File(plugin.getDataFolder(), "mySql.yml");
         langFile = new File(plugin.getDataFolder(), "lang.yml");
+        configFile = new File(plugin.getDataFolder(), "config.yml");
 
         if(!mySqlFile.exists()){
             try{
@@ -49,14 +53,53 @@ public class ConfigurationManager {
 
         }
 
+        if(!configFile.exists()){
+            try{
+                configFile.createNewFile();
+            }catch(IOException e){
+                Bukkit.getServer().getConsoleSender()
+                        .sendMessage(ChatColor.RED + Votes.getPrefix() + "Die Config konnte nicht geladen werden!");
+            }
+
+        }
+
         mySqlCfg = YamlConfiguration.loadConfiguration(mySqlFile);
         langCfg = YamlConfiguration.loadConfiguration(langFile);
+        configCfg = YamlConfiguration.loadConfiguration(configFile);
         Bukkit.getServer().getConsoleSender()
                 .sendMessage(ChatColor.GREEN + Votes.getPrefix() + "Die Configurationen wurden erfolgreich geladen!");
 
         loadDefaultMySql();
         loadDefaultLang();
+        loadDefaultConfig();
 
+    }
+
+    private void loadDefaultConfig() {
+        configCfg.addDefault("daily.item-left.material", "MINECART");
+        configCfg.addDefault("daily.item-left.name", "§6Stats");
+        configCfg.addDefault("daily.item-left.your-daily", "§aDeine Daily: §e");
+        configCfg.addDefault("daily.item-left.your-dailystreak", "§5Dein Dailystreak: §e");
+
+        configCfg.addDefault("daily.item-middle.name", "§6Daily Reward");
+        configCfg.addDefault("daily.item-middle.daily-is-available", "§aDu kannst deine tägliche Belohnung §cjetzt§a abholen!");
+        configCfg.addDefault("daily.item-middle.daily-is-available-in", "§aDu kannst deine tägliche Belohnung abholen in: §6");
+        configCfg.addDefault("daily.item-middle.your-reward", "§9Deine Belohnung: §c");
+        configCfg.addDefault("daily.item-middle.basic-reward", 100);
+
+        configCfg.addDefault("daily.item-right.material", "SIGN");
+        configCfg.addDefault("daily.item-right.name", "§6Best Player");
+        configCfg.addDefault("daily.item-right.best-daily-1", "§a1. ");
+        configCfg.addDefault("daily.item-right.best-daily-2", "§a2. ");
+        configCfg.addDefault("daily.item-right.best-daily-3", "§a3. ");
+
+        configCfg.options().copyDefaults(true);
+        try{
+            configCfg.save(configFile);
+        }catch(IOException e){
+            Bukkit.getServer().getConsoleSender()
+                    .sendMessage(ChatColor.RED + Votes.getPrefix() + "Die Standartwerte für die Language-Configuration wurde nicht geladen!");
+        }
     }
 
     // Lädt die Standartwerte
@@ -101,7 +144,10 @@ public class ConfigurationManager {
             return mySqlCfg.get(path);
         }else if(cfgType.equalsIgnoreCase("lang")){
             return langCfg.get(path);
-        }else{
+        }else if(cfgType.equalsIgnoreCase("config")){
+            return configCfg.get(path);
+        }
+        else{
             return null;
         }
     }

@@ -53,7 +53,7 @@ public class MySqlManager {
     public void createStatement(String query){
         try{
         Statement stmt = con.createStatement();
-        stmt.executeQuery(query);
+        stmt.execute(query);
         }catch (SQLException e){
             e.printStackTrace();
             Bukkit.getConsoleSender().sendMessage(ChatColor.RED + Votes.getPrefix() + "Ein Statement konnte nicht ausgeführt werden!");

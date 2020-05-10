@@ -2,6 +2,8 @@ package de.discordbot;
 
 
 //import de.discordbot.command.Daily;
+import de.discordbot.command.Daily;
+import de.discordbot.listener.onJoinListener;
 import de.discordbot.manager.ConfigurationManager;
 import de.discordbot.manager.MySqlManager;
 import org.bukkit.ChatColor;
@@ -12,11 +14,15 @@ public class Votes extends JavaPlugin {
     // Variablen erstellen
     private static ConfigurationManager configManager;
     private static String prefix = "[Votes] ";
-    private MySqlManager mySql;
+    private static MySqlManager mySql;
 
     // Getter für das ConfigurationManager-Objekt
     public static ConfigurationManager getConfigManager(){
         return configManager;
+    }
+
+    public static MySqlManager getMySqlManager(){
+        return mySql;
     }
 
     // Getter für den Prefix
@@ -29,7 +35,8 @@ public class Votes extends JavaPlugin {
 
         setupConfigurations();
         mySql = new MySqlManager();
-        //getCommand("daily").setExecutor(new Daily());
+        getCommand("daily").setExecutor(new Daily());
+        getServer().getPluginManager().registerEvents(new onJoinListener(), this);
         getServer().getConsoleSender().sendMessage(ChatColor.GREEN + getPrefix() + "Das Votes-Plugin wurde aktiviert!");
 
     }
