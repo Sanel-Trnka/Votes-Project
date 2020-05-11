@@ -65,7 +65,7 @@ public class Daily implements CommandExecutor {
 
             //-------------------------------------------------------------------------------------------------------------------------------------------
 
-            Inventory inventory = Bukkit.createInventory(null, 9*3, (String) Votes.getConfigManager().getConfigurationEntry("lang", "rewardsInventory.title"));
+            Inventory inventory = Bukkit.createInventory(null, 9*3, (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.inventory-title"));
 
             // Erstellen der Items
             createLeftItem(inventory);

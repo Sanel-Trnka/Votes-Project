@@ -79,6 +79,8 @@ public class ConfigurationManager {
         configCfg.addDefault("daily.basic-reward", 100);
         configCfg.addDefault("daily.reward-command", "/pay [NAME] [MONEY]");
 
+        langCfg.addDefault("daily.inventory-title", "Rewards");
+
         configCfg.addDefault("daily.item-left.material", "MINECART");
         configCfg.addDefault("daily.item-left.name", "§6Stats");
         configCfg.addDefault("daily.item-left.your-daily", "§aDeine Daily: §e");
@@ -123,7 +125,9 @@ public class ConfigurationManager {
 
     // Lädt die Standartwerte
     private void loadDefaultLang(){
-        langCfg.addDefault("rewardsInventory.title", "Rewards");
+
+
+
         langCfg.options().copyDefaults(true);
         try{
             langCfg.save(langFile);
