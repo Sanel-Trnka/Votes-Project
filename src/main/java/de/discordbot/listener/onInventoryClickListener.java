@@ -1,7 +1,6 @@
 package de.discordbot.listener;
 
 import de.discordbot.Votes;
-import de.discordbot.command.Daily;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,8 +16,13 @@ import java.util.Date;
 
 public class onInventoryClickListener implements Listener {
 
+    //Initialisiere Variablen
+    private String nextDaily = null;
+    private long diff = 0;
+
+    //Listener
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) throws ParseException {
+    public void onInventoryClick(InventoryClickEvent e) throws ParseException, SQLException {
 
         Player p = (Player) e.getWhoClicked();
 
@@ -28,35 +32,36 @@ public class onInventoryClickListener implements Listener {
 
             if(e.getCurrentItem().getData().getItemType() == e.getInventory().getItem(13).getData().getItemType()){
 
-                if(Daily.dailyReward.get(p)){
+                ResultSet rs = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
 
-                    ResultSet rs = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
+                while(rs.next()){
 
-                    try{
-                        while(rs.next()){
+                    nextDaily = rs.getString(2);
 
-                            if(rs.getString(2) != null) {
-                                SimpleDateFormat sdf = new SimpleDateFormat();
-                                sdf.applyPattern("dd/MM/yyyy HH:mm:ss");
-                                String dateNowString = sdf.format(new Date());
+                    if(rs.getString(2) != null) {
+                        SimpleDateFormat sdf = new SimpleDateFormat();
+                        sdf.applyPattern("dd/MM/yyyy HH:mm:ss");
+                        String dateNowString = sdf.format(new Date());
 
-                                Date d1 = sdf.parse(rs.getString(2));
-                                Date d2 = sdf.parse(dateNowString);
+                        Date d1 = sdf.parse(rs.getString(2));
+                        Date d2 = sdf.parse(dateNowString);
 
-                                long diff = d2.getTime() - d1.getTime();
+                        diff = d2.getTime() - d1.getTime();
 
-                                if(diff <= 86400000){
-                                    Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = " + (rs.getInt(7) + 1) + ";");
-                                }else{
-                                    Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = 0;");
-                                }
-
-                            }
-                        }
-                    } catch (SQLException ex){
-                        ex.printStackTrace();
                     }
+                }
 
+                if(diff >= 0){
+
+                    while(rs.next()){
+
+                        if(diff <= 86400000){
+                            Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = " + (rs.getInt(7) + 1) + ";");
+                        }else{
+                            Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = 0;");
+                        }
+
+                    }
                     ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
                     int dailyStreak = 0;
 
@@ -70,24 +75,23 @@ public class onInventoryClickListener implements Listener {
                         exception.printStackTrace();
                     }
 
-
                     String command = (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.reward-command");
                     String[] commandArray = command.split(" ");
 
-                    for(int i = 0; i < commandArray.length; i++){
-                        if(commandArray[i].equals("[NAME]")){
-                            commandArray[i] = p.getDisplayName();
-                        } else if(commandArray[i].equals("[MONEY]")){
+                    for (int i = 0; i < commandArray.length; i++) {
+                        if (commandArray[i].equals("[NAME]")) {
+                            commandArray[i] = p.getName();
+                        } else if (commandArray[i].equals("[MONEY]")) {
                             int reward = (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward") * (dailyStreak + 1);
                             commandArray[i] = Integer.toString(reward);
                         }
+
                     }
 
                     String commandExecute = String.join(" ", commandArray);
 
+                    p.closeInventory();
                     Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), commandExecute);
-                    p.sendMessage(commandExecute);
-                    Daily.dailyReward.remove(p);
 
                     SimpleDateFormat sdf = new SimpleDateFormat();
                     sdf.applyPattern("dd/MM/yyyy HH:mm:ss");
@@ -97,14 +101,10 @@ public class onInventoryClickListener implements Listener {
                     c.setTime(sdf.parse(dateNowString));
                     c.add(Calendar.DATE, 1);
                     String dateNextDaily = sdf.format(c.getTime());
-
                     Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `NEXTDAILY` = '" + dateNextDaily + "';");
 
                 }
             }
-
         }
-
     }
-
 }

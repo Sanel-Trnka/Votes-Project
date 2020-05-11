@@ -22,8 +22,6 @@ import java.util.*;
 
 public class Daily implements CommandExecutor {
 
-    public static HashMap<Player, Boolean> dailyReward = new HashMap<Player, Boolean>();
-
     private String nextDaily = null;
     private String firstJoin = null;
     private String votes = null;
@@ -122,21 +120,8 @@ public class Daily implements CommandExecutor {
         }
 
         if(nextDaily == null || diff > 0){
-            if(dailyReward.containsKey(p)) {
-                if (!dailyReward.get(p)) {
-                    dailyReward.remove(p);
-                }
-            }
-            dailyReward.put(p, true);
             lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.daily-is-available"), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.your-reward") + (Integer.parseInt(dailyStreak) + 1) * (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward"));
         }else{
-
-            if(dailyReward.containsKey(p)) {
-                if (dailyReward.get(p)) {
-                    dailyReward.remove(p);
-                }
-            }
-            dailyReward.put(p, false);
 
             String dateNowString = sdf.format(new Date());
 
