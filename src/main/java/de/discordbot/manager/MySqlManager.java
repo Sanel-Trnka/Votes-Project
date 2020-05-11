@@ -49,6 +49,11 @@ public class MySqlManager {
         }
     }
 
+    public void close() throws SQLException {
+        con.close();
+    }
+
+
     // Erstellt mit dem String query ein Statement und schickt diese ab
     public void createStatement(String query){
         try{

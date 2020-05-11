@@ -10,6 +10,8 @@ import de.discordbot.manager.MySqlManager;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
+
 public class Votes extends JavaPlugin {
 
     // Variablen erstellen
@@ -46,6 +48,11 @@ public class Votes extends JavaPlugin {
     // Stoppmethode
     public void onDisable() {
         getServer().getConsoleSender().sendMessage(ChatColor.RED + getPrefix() + "Das Votes-Plugin wurde deaktiviert!");
+        try {
+            mySql.close();
+        } catch (SQLException exception) {
+            exception.printStackTrace();
+        }
     }
 
     // Methode um die Configurationen zu laden
