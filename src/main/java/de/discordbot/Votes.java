@@ -3,6 +3,7 @@ package de.discordbot;
 
 //import de.discordbot.command.Daily;
 import de.discordbot.command.Daily;
+import de.discordbot.listener.onInventoryClickListener;
 import de.discordbot.listener.onJoinListener;
 import de.discordbot.manager.ConfigurationManager;
 import de.discordbot.manager.MySqlManager;
@@ -37,6 +38,7 @@ public class Votes extends JavaPlugin {
         mySql = new MySqlManager();
         getCommand("daily").setExecutor(new Daily());
         getServer().getPluginManager().registerEvents(new onJoinListener(), this);
+        getServer().getPluginManager().registerEvents(new onInventoryClickListener(), this);
         getServer().getConsoleSender().sendMessage(ChatColor.GREEN + getPrefix() + "Das Votes-Plugin wurde aktiviert!");
 
     }

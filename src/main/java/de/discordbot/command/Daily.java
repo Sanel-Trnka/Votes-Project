@@ -1,9 +1,10 @@
 package de.discordbot.command;
 
 import de.discordbot.Votes;
-import org.apache.commons.lang.time.DateUtils;
-import org.bukkit.*;
-import org.bukkit.block.Skull;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.SkullType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,9 +19,10 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class Daily implements CommandExecutor {
+
+    public static HashMap<Player, Boolean> dailyReward = new HashMap<Player, Boolean>();
 
     private String nextDaily = null;
     private String firstJoin = null;
@@ -29,7 +31,7 @@ public class Daily implements CommandExecutor {
     private String daily = null;
     private String dailyStreak = null;
 
-    List<String> mostDaily;
+    List<String> mostDaily = new ArrayList<String>();
 
     public boolean onCommand(CommandSender sender, Command cmd, String string, String[] args) {
 
@@ -42,7 +44,7 @@ public class Daily implements CommandExecutor {
             ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT UUID, Daily FROM `accounts` ORDER BY Daily DESC LIMIT 3;");
 
             try {
-                while (rs2.next()) mostDaily.add("Hi");
+                while (rs2.next()) mostDaily.add(rs2.getString(1));
             }catch (SQLException e){
                 e.printStackTrace();
             }
@@ -120,8 +122,21 @@ public class Daily implements CommandExecutor {
         }
 
         if(nextDaily == null || diff > 0){
-            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.daily-is-available"), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.your-reward") + (Integer.parseInt(dailyStreak) + 1) * (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.basic-reward"));
+            if(dailyReward.containsKey(p)) {
+                if (!dailyReward.get(p)) {
+                    dailyReward.remove(p);
+                }
+            }
+            dailyReward.put(p, true);
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.daily-is-available"), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.your-reward") + (Integer.parseInt(dailyStreak) + 1) * (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward"));
         }else{
+
+            if(dailyReward.containsKey(p)) {
+                if (dailyReward.get(p)) {
+                    dailyReward.remove(p);
+                }
+            }
+            dailyReward.put(p, false);
 
             String dateNowString = sdf.format(new Date());
 
@@ -149,9 +164,15 @@ public class Daily implements CommandExecutor {
 
         itemMetaRight.setDisplayName((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.name"));
 
+        List<String> lore = new ArrayList<String>();
 
-        List<String> lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + mostDaily.get(0));
-
+        if(mostDaily.size() == 1) {
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + "-----", (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + "-----");
+        }else if(mostDaily.size() == 2){
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(1))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + "-----");
+        }else{
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(1))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(2))).getName());
+        }
         itemMetaRight.setLore(lore);
         itemRight.setItemMeta(itemMetaRight);
         inventory.setItem(15, itemRight);

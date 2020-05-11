@@ -8,7 +8,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 
 public class ConfigurationManager {
 
@@ -76,6 +75,10 @@ public class ConfigurationManager {
     }
 
     private void loadDefaultConfig() {
+
+        configCfg.addDefault("daily.basic-reward", 100);
+        configCfg.addDefault("daily.reward-command", "/pay [NAME] [MONEY]");
+
         configCfg.addDefault("daily.item-left.material", "MINECART");
         configCfg.addDefault("daily.item-left.name", "§6Stats");
         configCfg.addDefault("daily.item-left.your-daily", "§aDeine Daily: §e");
@@ -85,7 +88,6 @@ public class ConfigurationManager {
         configCfg.addDefault("daily.item-middle.daily-is-available", "§aDu kannst deine tägliche Belohnung §cjetzt§a abholen!");
         configCfg.addDefault("daily.item-middle.daily-is-available-in", "§aDu kannst deine tägliche Belohnung abholen in: §6");
         configCfg.addDefault("daily.item-middle.your-reward", "§9Deine Belohnung: §c");
-        configCfg.addDefault("daily.item-middle.basic-reward", 100);
 
         configCfg.addDefault("daily.item-right.material", "SIGN");
         configCfg.addDefault("daily.item-right.name", "§6Best Player");
@@ -104,18 +106,11 @@ public class ConfigurationManager {
 
     // Lädt die Standartwerte
     private void loadDefaultMySql(){
-        HashMap<String, Integer> rewards = new HashMap<String, Integer>();
-        rewards.put("daily", 5);
-        rewards.put("week", 50);
-        rewards.put("month", 500);
-        rewards.put("six-month", 48932498);
-        rewards.put("year", 48932498);
         mySqlCfg.addDefault("host", "127.0.0.1");
         mySqlCfg.addDefault("port", "3306");
         mySqlCfg.addDefault("username", "root");
         mySqlCfg.addDefault("password", "");
         mySqlCfg.addDefault("database", "exampleDatabase");
-        mySqlCfg.addDefault("hashmap", rewards);
         mySqlCfg.options().copyDefaults(true);
 
         try{

@@ -1,0 +1,110 @@
+package de.discordbot.listener;
+
+import de.discordbot.Votes;
+import de.discordbot.command.Daily;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+public class onInventoryClickListener implements Listener {
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent e) throws ParseException {
+
+        Player p = (Player) e.getWhoClicked();
+
+        if(e.getInventory().getName().equals((String) Votes.getConfigManager().getConfigurationEntry("lang", "rewardsInventory.title"))){
+
+            e.setCancelled(true);
+
+            if(e.getCurrentItem().getData().getItemType() == e.getInventory().getItem(13).getData().getItemType()){
+
+                if(Daily.dailyReward.get(p)){
+
+                    ResultSet rs = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
+
+                    try{
+                        while(rs.next()){
+
+                            if(rs.getString(2) != null) {
+                                SimpleDateFormat sdf = new SimpleDateFormat();
+                                sdf.applyPattern("dd/MM/yyyy HH:mm:ss");
+                                String dateNowString = sdf.format(new Date());
+
+                                Date d1 = sdf.parse(rs.getString(2));
+                                Date d2 = sdf.parse(dateNowString);
+
+                                long diff = d2.getTime() - d1.getTime();
+
+                                if(diff <= 86400000){
+                                    Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = " + (rs.getInt(7) + 1) + ";");
+                                }else{
+                                    Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = 0;");
+                                }
+
+                            }
+                        }
+                    } catch (SQLException ex){
+                        ex.printStackTrace();
+                    }
+
+                    ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
+                    int dailyStreak = 0;
+
+                    try{
+
+                        while(rs2.next()){
+                            dailyStreak = rs2.getInt(7);
+                        }
+
+                    } catch (SQLException exception){
+                        exception.printStackTrace();
+                    }
+
+
+                    String command = (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.reward-command");
+                    String[] commandArray = command.split(" ");
+
+                    for(int i = 0; i < commandArray.length; i++){
+                        if(commandArray[i].equals("[NAME]")){
+                            commandArray[i] = p.getDisplayName();
+                        } else if(commandArray[i].equals("[MONEY]")){
+                            int reward = (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward") * (dailyStreak + 1);
+                            commandArray[i] = Integer.toString(reward);
+                        }
+                    }
+
+                    String commandExecute = String.join(" ", commandArray);
+
+                    Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), commandExecute);
+                    p.sendMessage(commandExecute);
+                    Daily.dailyReward.remove(p);
+
+                    SimpleDateFormat sdf = new SimpleDateFormat();
+                    sdf.applyPattern("dd/MM/yyyy HH:mm:ss");
+                    String dateNowString = sdf.format(new Date());
+
+                    Calendar c = Calendar.getInstance();
+                    c.setTime(sdf.parse(dateNowString));
+                    c.add(Calendar.DATE, 1);
+                    String dateNextDaily = sdf.format(c.getTime());
+
+                    Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `NEXTDAILY` = '" + dateNextDaily + "';");
+
+                }
+            }
+
+        }
+
+    }
+
+}
