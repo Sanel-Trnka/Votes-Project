@@ -77,9 +77,9 @@ public class ConfigurationManager {
     private void loadDefaultConfig() {
 
         configCfg.addDefault("daily.basic-reward", 100);
-        configCfg.addDefault("daily.reward-command", "/pay [NAME] [MONEY]");
+        configCfg.addDefault("daily.reward-command", "eco give [NAME] [MONEY]");
 
-        langCfg.addDefault("daily.inventory-title", "Rewards");
+        configCfg.addDefault("daily.inventory-title", "Rewards");
 
         configCfg.addDefault("daily.item-left.material", "MINECART");
         configCfg.addDefault("daily.item-left.name", "§6Stats");

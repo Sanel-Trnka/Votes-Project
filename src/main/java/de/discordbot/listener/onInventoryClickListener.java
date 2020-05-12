@@ -26,7 +26,7 @@ public class onInventoryClickListener implements Listener {
 
         Player p = (Player) e.getWhoClicked();
 
-        if(e.getInventory().getName().equals((String) Votes.getConfigManager().getConfigurationEntry("lang", "rewardsInventory.title"))){
+        if(e.getInventory().getName().equals((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.inventory-title"))){
 
             e.setCancelled(true);
 
@@ -51,24 +51,26 @@ public class onInventoryClickListener implements Listener {
                     }
                 }
 
-                if(diff >= 0){
+                if(diff >= 0 || nextDaily == null){
 
-                    while(rs.next()){
+                    ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
 
-                        if(diff <= 86400000){
-                            Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = " + (rs.getInt(7) + 1) + ";");
+                    while(rs2.next()){
+
+                        if(diff <= 86400000 || nextDaily == null){
+                            Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs2.getInt(6) + 1) + ", `Dailystreak` = " + (rs2.getInt(7) + 1) + ";");
                         }else{
-                            Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs.getInt(6) + 1) + ", `Dailystreak` = 0;");
+                            Votes.getMySqlManager().createStatement("UPDATE `accounts` SET `Daily` = " + (rs2.getInt(6) + 1) + ", `Dailystreak` = 0;");
                         }
 
                     }
-                    ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
+                    ResultSet rs3 = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
                     int dailyStreak = 0;
 
                     try{
 
-                        while(rs2.next()){
-                            dailyStreak = rs2.getInt(7);
+                        while(rs3.next()){
+                            dailyStreak = rs3.getInt(7);
                         }
 
                     } catch (SQLException exception){
@@ -82,7 +84,7 @@ public class onInventoryClickListener implements Listener {
                         if (commandArray[i].equals("[NAME]")) {
                             commandArray[i] = p.getName();
                         } else if (commandArray[i].equals("[MONEY]")) {
-                            int reward = (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward") * (dailyStreak + 1);
+                            int reward = (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward") * dailyStreak;
                             commandArray[i] = Integer.toString(reward);
                         }
 

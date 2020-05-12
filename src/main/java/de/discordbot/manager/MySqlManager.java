@@ -39,7 +39,7 @@ public class MySqlManager {
     private void setupTable(){
         try{
         Statement stmt = con.createStatement();
-        String query = "CREATE TABLE IF NOT EXISTS `" + database + "`.`" + table + "` ( `UUID` VARCHAR(36) NOT NULL , `LASTDAILY` DATE NOT NULL , `FIRSTJOIN` DATE NOT NULL );";
+        String query = "CREATE TABLE IF NOT EXISTS `" + database + "`.`" + table + "` (`UUID` VARCHAR(36) NOT NULL UNIQUE, `NEXTDAILY` VARCHAR(36) NOT NULL , `FIRSTJOIN` VARCHAR(36) NOT NULL, `Votes` INT(11) NOT NULL, `Votestreak` INT(11) NOT NULL, `Daily` INT(11) NOT NULL, `Dailystreak` INT(11) NOT NULL)";
         stmt.execute(query);
         Bukkit.getConsoleSender().sendMessage(ChatColor.GREEN + Votes.getPrefix() + "Die Tabelle wurde erfolgreich aufgesetzt!");
         }catch (SQLException e){

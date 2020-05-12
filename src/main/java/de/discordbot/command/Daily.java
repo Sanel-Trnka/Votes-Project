@@ -33,16 +33,21 @@ public class Daily implements CommandExecutor {
 
     public boolean onCommand(CommandSender sender, Command cmd, String string, String[] args) {
 
+
         if(sender instanceof Player){
             Player p = (Player) sender;
 
             // Werte aus der DB aufrufen ------------------------------------------------------------------------------------------------------
 
             ResultSet rs = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
-            ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT UUID, Daily FROM `accounts` ORDER BY Daily DESC LIMIT 3;");
+            ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT UUID, Daily FROM `accounts` ORDER BY Daily;");
 
             try {
-                while (rs2.next()) mostDaily.add(rs2.getString(1));
+                while (rs2.next()){
+                    if(mostDaily.size() < 3) {
+                        mostDaily.add(rs2.getString(1));
+                    }
+                }
             }catch (SQLException e){
                 e.printStackTrace();
             }
@@ -158,6 +163,7 @@ public class Daily implements CommandExecutor {
         }else{
             lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(1))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(2))).getName());
         }
+        mostDaily.clear();
         itemMetaRight.setLore(lore);
         itemRight.setItemMeta(itemMetaRight);
         inventory.setItem(15, itemRight);
