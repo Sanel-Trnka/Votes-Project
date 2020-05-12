@@ -97,6 +97,9 @@ public class ConfigurationManager {
         configCfg.addDefault("daily.item-right.best-daily-2", "§a2. ");
         configCfg.addDefault("daily.item-right.best-daily-3", "§a3. ");
 
+        configCfg.addDefault("daily.villager.command", "villager");
+        configCfg.addDefault("daily.villager.custom_name", "DailyVillager");
+
         configCfg.options().copyDefaults(true);
         try{
             configCfg.save(configFile);
@@ -113,6 +116,7 @@ public class ConfigurationManager {
         mySqlCfg.addDefault("username", "root");
         mySqlCfg.addDefault("password", "");
         mySqlCfg.addDefault("database", "exampleDatabase");
+
         mySqlCfg.options().copyDefaults(true);
 
         try{
@@ -126,7 +130,10 @@ public class ConfigurationManager {
     // Lädt die Standartwerte
     private void loadDefaultLang(){
 
+        mySqlCfg.addDefault("villager-created", "§aDer Villager wurde erfolgreich erstellt!");
 
+        mySqlCfg.addDefault("no-permission", "§cDazu hast du keine Berechtigung!");
+        mySqlCfg.addDefault("try-other-command", "§cDieser Befehl existiert nicht!");
 
         langCfg.options().copyDefaults(true);
         try{

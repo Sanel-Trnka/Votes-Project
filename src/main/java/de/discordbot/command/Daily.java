@@ -8,7 +8,9 @@ import org.bukkit.SkullType;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -33,60 +35,83 @@ public class Daily implements CommandExecutor {
 
     public boolean onCommand(CommandSender sender, Command cmd, String string, String[] args) {
 
+        if (args.length == 0) {
+            if (sender instanceof Player) {
+                Player p = (Player) sender;
 
-        if(sender instanceof Player){
-            Player p = (Player) sender;
+                // Werte aus der DB aufrufen ------------------------------------------------------------------------------------------------------
 
-            // Werte aus der DB aufrufen ------------------------------------------------------------------------------------------------------
+                ResultSet rs = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
+                ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT UUID, Daily FROM `accounts` ORDER BY Daily DESC LIMIT 3;");
 
-            ResultSet rs = Votes.getMySqlManager().getResult("SELECT * FROM `accounts` WHERE UUID = '" + p.getUniqueId().toString() + "';");
-            ResultSet rs2 = Votes.getMySqlManager().getResult("SELECT UUID, Daily FROM `accounts` ORDER BY Daily;");
+                try {
+                    while (rs2.next()) mostDaily.add(rs2.getString(1));
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
 
-            try {
-                while (rs2.next()){
-                    if(mostDaily.size() < 3) {
-                        mostDaily.add(rs2.getString(1));
+                try {
+                    while (rs.next()) {
+
+                        nextDaily = rs.getString(2);
+                        firstJoin = rs.getString(3);
+                        votes = rs.getString(4);
+                        voteStreak = rs.getString(5);
+                        daily = rs.getString(6);
+                        dailyStreak = rs.getString(7);
+
                     }
-                }
-            }catch (SQLException e){
-                e.printStackTrace();
-            }
 
-            try {
-                while (rs.next()) {
-
-                    nextDaily = rs.getString(2);
-                    firstJoin = rs.getString(3);
-                    votes = rs.getString(4);
-                    voteStreak = rs.getString(5);
-                    daily = rs.getString(6);
-                    dailyStreak = rs.getString(7);
-
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
 
-            }catch (SQLException e){
-                e.printStackTrace();
+                //-------------------------------------------------------------------------------------------------------------------------------------------
+
+                Inventory inventory = Bukkit.createInventory(null, 9 * 3, (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.inventory-title"));
+
+                // Erstellen der Items
+                createLeftItem(inventory);
+                try {
+                    createMiddleItem(inventory, p);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                createRightItem(inventory);
+
+                p.getWorld().spawnParticle(Particle.HEART, p.getLocation(), 40, 2.0D, 3.0D, 2.0D, 5.0D);
+                p.openInventory(inventory);
+
             }
 
-            //-------------------------------------------------------------------------------------------------------------------------------------------
+            return false;
+        }else if(args.length == 1 && args[0].equalsIgnoreCase((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.villager.command"))){
 
-            Inventory inventory = Bukkit.createInventory(null, 9*3, (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.inventory-title"));
+            if (sender instanceof Player) {
+                Player p = (Player) sender;
 
-            // Erstellen der Items
-            createLeftItem(inventory);
-            try {
-                createMiddleItem(inventory, p);
-            } catch (ParseException e) {
-                e.printStackTrace();
+                if(p.hasPermission("*")){
+
+                    Villager v = (Villager) p.getWorld().spawnEntity(p.getLocation(), EntityType.VILLAGER);
+                    v.setCustomName((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.villager.custom_name"));
+                    p.sendMessage((String) Votes.getConfigManager().getConfigurationEntry("lang", "villager-created"));
+
+                }else{
+                    p.sendMessage((String) Votes.getConfigManager().getConfigurationEntry("lang", "no-permission"));
+                }
+
             }
-            createRightItem(inventory);
 
-            p.getWorld().spawnParticle(Particle.HEART, p.getLocation(), 40, 2.0D, 3.0D, 2.0D, 5.0D);
-            p.openInventory(inventory);
+            return false;
+        }else{
 
+            if (sender instanceof Player) {
+                Player p = (Player) sender;
+                p.sendMessage((String) Votes.getConfigManager().getConfigurationEntry("lang", "try-other-command"));
+            }
+
+            return false;
         }
-
-        return false;
     }
 
     public void createLeftItem(Inventory inventory){
@@ -157,11 +182,11 @@ public class Daily implements CommandExecutor {
         List<String> lore = new ArrayList<String>();
 
         if(mostDaily.size() == 1) {
-            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + "-----", (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + "-----");
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getOfflinePlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + "-----", (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + "-----");
         }else if(mostDaily.size() == 2){
-            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(1))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + "-----");
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getOfflinePlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + Bukkit.getOfflinePlayer(UUID.fromString(mostDaily.get(1))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + "-----");
         }else{
-            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(1))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + Bukkit.getPlayer(UUID.fromString(mostDaily.get(2))).getName());
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-1") + Bukkit.getOfflinePlayer(UUID.fromString(mostDaily.get(0))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-2") + Bukkit.getOfflinePlayer(UUID.fromString(mostDaily.get(1))).getName(), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-right.best-daily-3") + Bukkit.getOfflinePlayer(UUID.fromString(mostDaily.get(2))).getName());
         }
         mostDaily.clear();
         itemMetaRight.setLore(lore);
