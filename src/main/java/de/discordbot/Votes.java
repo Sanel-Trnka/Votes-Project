@@ -42,7 +42,8 @@ public class Votes extends JavaPlugin {
         getCommand("daily").setExecutor(new Daily());
         getServer().getPluginManager().registerEvents(new onJoinListener(), this);
         getServer().getPluginManager().registerEvents(new onInventoryClickListener(), this);
-        getServer().getPluginManager().registerEvents(new onVillagerClickListener(), this);
+        if(getConfigManager().existLobbyConfig())
+            getServer().getPluginManager().registerEvents(new onVillagerClickListener(), this);
         getServer().getConsoleSender().sendMessage(ChatColor.GREEN + getPrefix() + "Das Votes-Plugin wurde aktiviert!");
 
     }

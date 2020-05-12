@@ -19,7 +19,7 @@ public class onVillagerClickListener implements Listener {
         if(e.getRightClicked().getType().equals(EntityType.VILLAGER)){
             Villager v = (Villager) e.getRightClicked();
 
-            if(v.getCustomName().equalsIgnoreCase((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.villager.custom_name"))){
+            if(v.getCustomName().equalsIgnoreCase((String) Votes.getConfigManager().getConfigurationEntry("lobby", "daily.villager.custom_name"))){
 
                 e.setCancelled(true);
                 Bukkit.getServer().dispatchCommand(p, "daily");

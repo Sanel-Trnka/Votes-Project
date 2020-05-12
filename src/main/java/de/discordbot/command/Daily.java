@@ -1,10 +1,7 @@
 package de.discordbot.command;
 
 import de.discordbot.Votes;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.SkullType;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -85,33 +82,37 @@ public class Daily implements CommandExecutor {
             }
 
             return false;
-        }else if(args.length == 1 && args[0].equalsIgnoreCase((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.villager.command"))){
+        } else if (sender instanceof Player) {
+            Player p = (Player) sender;
 
-            if (sender instanceof Player) {
-                Player p = (Player) sender;
+            if (Votes.getConfigManager().existLobbyConfig()) {
 
-                if(p.hasPermission("*")){
 
-                    Villager v = (Villager) p.getWorld().spawnEntity(p.getLocation(), EntityType.VILLAGER);
-                    v.setCustomName((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.villager.custom_name"));
-                    p.sendMessage((String) Votes.getConfigManager().getConfigurationEntry("lang", "villager-created"));
+                if (args.length == 1 && args[0].equalsIgnoreCase((String) Votes.getConfigManager().getConfigurationEntry("lobby", "daily.villager.command"))) {
 
-                }else{
-                    p.sendMessage((String) Votes.getConfigManager().getConfigurationEntry("lang", "no-permission"));
+
+                    if (p.hasPermission("*")) {
+
+
+                        Villager v = (Villager) p.getWorld().spawnEntity(p.getLocation(), EntityType.VILLAGER);
+                        v.setCustomName((String) Votes.getConfigManager().getConfigurationEntry("lobby", "daily.villager.custom_name"));
+                        p.sendMessage((String) Votes.getConfigManager().getConfigurationEntry("lobby", "villager-created"));
+
+
+                    } else {
+                        p.sendMessage(ChatColor.RED + Votes.getPrefix() + (String) Votes.getConfigManager().getConfigurationEntry("lang", "no-permission"));
+                    }
+
+                } else {
+                        p.sendMessage(ChatColor.RED + Votes.getPrefix() + (String) Votes.getConfigManager().getConfigurationEntry("lang", "try-other-command"));
                 }
 
+            }else {
+                p.sendMessage(ChatColor.RED + Votes.getPrefix() + (String) Votes.getConfigManager().getConfigurationEntry("lang", "just-lobby"));
             }
-
-            return false;
-        }else{
-
-            if (sender instanceof Player) {
-                Player p = (Player) sender;
-                p.sendMessage((String) Votes.getConfigManager().getConfigurationEntry("lang", "try-other-command"));
-            }
-
             return false;
         }
+        return false;
     }
 
     public void createLeftItem(Inventory inventory){

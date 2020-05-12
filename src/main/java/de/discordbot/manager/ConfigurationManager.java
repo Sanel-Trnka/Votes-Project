@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 public class ConfigurationManager {
 
@@ -21,6 +22,9 @@ public class ConfigurationManager {
 
     public FileConfiguration configCfg;
     public File configFile;
+
+    public FileConfiguration lobbyCfg;
+    private static File lobbyFile;
 
     // Config-Files werden hier deklariert und Startklar gemacht
     public void setup(){
@@ -65,18 +69,45 @@ public class ConfigurationManager {
         mySqlCfg = YamlConfiguration.loadConfiguration(mySqlFile);
         langCfg = YamlConfiguration.loadConfiguration(langFile);
         configCfg = YamlConfiguration.loadConfiguration(configFile);
+
         Bukkit.getServer().getConsoleSender()
                 .sendMessage(ChatColor.GREEN + Votes.getPrefix() + "Die Configurationen wurden erfolgreich geladen!");
 
         loadDefaultMySql();
         loadDefaultLang();
         loadDefaultConfig();
+        if((boolean) getConfigurationEntry("config", "lobby")){
+            setupLobby();
+        }
+
+    }
+
+    public void setupLobby(){
+
+        lobbyFile = new File(plugin.getDataFolder(), "lobby.yml");
+
+        if(!lobbyFile.exists()){
+            try{
+                lobbyFile.createNewFile();
+            }catch(IOException e){
+                Bukkit.getServer().getConsoleSender()
+                        .sendMessage(ChatColor.RED + Votes.getPrefix() + "Die Lobby-Config konnte nicht geladen werden!");
+            }
+
+        }
+
+        lobbyCfg = YamlConfiguration.loadConfiguration(lobbyFile);
+
+        loadDefaultLobby();
 
     }
 
     private void loadDefaultConfig() {
 
+        configCfg.addDefault("lobby", false);
         configCfg.addDefault("daily.basic-reward", 100);
+        HashMap<String, Integer> permissionRewards = new HashMap<>();
+        configCfg.addDefault("daily.permission-reward", permissionRewards);
         configCfg.addDefault("daily.reward-command", "eco give [NAME] [MONEY]");
 
         configCfg.addDefault("daily.inventory-title", "Rewards");
@@ -96,9 +127,6 @@ public class ConfigurationManager {
         configCfg.addDefault("daily.item-right.best-daily-1", "§a1. ");
         configCfg.addDefault("daily.item-right.best-daily-2", "§a2. ");
         configCfg.addDefault("daily.item-right.best-daily-3", "§a3. ");
-
-        configCfg.addDefault("daily.villager.command", "villager");
-        configCfg.addDefault("daily.villager.custom_name", "DailyVillager");
 
         configCfg.options().copyDefaults(true);
         try{
@@ -130,10 +158,9 @@ public class ConfigurationManager {
     // Lädt die Standartwerte
     private void loadDefaultLang(){
 
-        mySqlCfg.addDefault("villager-created", "§aDer Villager wurde erfolgreich erstellt!");
-
-        mySqlCfg.addDefault("no-permission", "§cDazu hast du keine Berechtigung!");
-        mySqlCfg.addDefault("try-other-command", "§cDieser Befehl existiert nicht!");
+        langCfg.addDefault("no-permission", "§cDazu hast du keine Berechtigung!");
+        langCfg.addDefault("try-other-command", "§cDieser Befehl existiert nicht!");
+        langCfg.addDefault("just-lobby", "§cBitte führe diesen Befehl nur in der Lobby aus!");
 
         langCfg.options().copyDefaults(true);
         try{
@@ -141,6 +168,21 @@ public class ConfigurationManager {
         }catch(IOException e){
             Bukkit.getServer().getConsoleSender()
                     .sendMessage(ChatColor.RED + Votes.getPrefix() + "Die Standartwerte für die Language-Configuration wurde nicht geladen!");
+        }
+    }
+
+    private void loadDefaultLobby(){
+
+        lobbyCfg.addDefault("villager-created", "§aDer Villager wurde erfolgreich erstellt!");
+        lobbyCfg.addDefault("daily.villager.command", "villager");
+        lobbyCfg.addDefault("daily.villager.custom_name", "DailyVillager");
+
+        lobbyCfg.options().copyDefaults(true);
+        try{
+            lobbyCfg.save(lobbyFile);
+        }catch(IOException e){
+            Bukkit.getServer().getConsoleSender()
+                    .sendMessage(ChatColor.RED + Votes.getPrefix() + "Die Standartwerte für die Lobby-Configuration wurde nicht geladen!");
         }
     }
 
@@ -152,10 +194,22 @@ public class ConfigurationManager {
             return langCfg.get(path);
         }else if(cfgType.equalsIgnoreCase("config")){
             return configCfg.get(path);
+        }else if(cfgType.equalsIgnoreCase("lobby")){
+            return lobbyCfg.get(path);
         }
         else{
             return null;
         }
+    }
+
+    public static boolean existLobbyConfig(){
+
+        if((boolean) Votes.getConfigManager().getConfigurationEntry("config", "lobby")){
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
 }
