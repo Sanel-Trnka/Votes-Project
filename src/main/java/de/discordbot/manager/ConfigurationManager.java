@@ -9,10 +9,13 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ConfigurationManager {
 
     private Votes plugin = Votes.getPlugin(Votes.class);
+
+    public static Map<String, Integer> permissionRewards = new HashMap<>();
     // Erstellen der Files und der FileConfigs
     public FileConfiguration mySqlCfg;
     public File mySqlFile;
@@ -35,6 +38,7 @@ public class ConfigurationManager {
         mySqlFile = new File(plugin.getDataFolder(), "mySql.yml");
         langFile = new File(plugin.getDataFolder(), "lang.yml");
         configFile = new File(plugin.getDataFolder(), "config.yml");
+        lobbyFile = new File(plugin.getDataFolder(), "lobby.yml");
 
         if(!mySqlFile.exists()){
             try{
@@ -76,7 +80,7 @@ public class ConfigurationManager {
         loadDefaultMySql();
         loadDefaultLang();
         loadDefaultConfig();
-        if((boolean) getConfigurationEntry("config", "lobby")){
+        if(lobbyFile.exists()){
             setupLobby();
         }
 
@@ -84,16 +88,13 @@ public class ConfigurationManager {
 
     public void setupLobby(){
 
-        lobbyFile = new File(plugin.getDataFolder(), "lobby.yml");
-
-        if(!lobbyFile.exists()){
-            try{
+        if(lobbyFile.length() == 0) {
+            try {
                 lobbyFile.createNewFile();
-            }catch(IOException e){
+            } catch (IOException e) {
                 Bukkit.getServer().getConsoleSender()
                         .sendMessage(ChatColor.RED + Votes.getPrefix() + "Die Lobby-Config konnte nicht geladen werden!");
             }
-
         }
 
         lobbyCfg = YamlConfiguration.loadConfiguration(lobbyFile);
@@ -106,7 +107,8 @@ public class ConfigurationManager {
 
         configCfg.addDefault("lobby", false);
         configCfg.addDefault("daily.basic-reward", 100);
-        HashMap<String, Integer> permissionRewards = new HashMap<>();
+        permissionRewards.put("*", 1000000);
+        permissionRewards.put("legend", 1000);
         configCfg.addDefault("daily.permission-reward", permissionRewards);
         configCfg.addDefault("daily.reward-command", "eco give [NAME] [MONEY]");
 
@@ -204,7 +206,7 @@ public class ConfigurationManager {
 
     public static boolean existLobbyConfig(){
 
-        if((boolean) Votes.getConfigManager().getConfigurationEntry("config", "lobby")){
+        if(lobbyFile.exists()){
             return true;
         }else{
             return false;

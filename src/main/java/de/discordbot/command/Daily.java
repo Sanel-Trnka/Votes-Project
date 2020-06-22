@@ -1,6 +1,7 @@
 package de.discordbot.command;
 
 import de.discordbot.Votes;
+import de.discordbot.manager.ConfigurationManager;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -151,7 +152,16 @@ public class Daily implements CommandExecutor {
         }
 
         if(nextDaily == null || diff > 0){
-            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.daily-is-available"), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.your-reward") + (Integer.parseInt(dailyStreak) + 1) * (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward"));
+            int rewardCoins = (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward");
+
+            for(String key : ConfigurationManager.permissionRewards.keySet()){
+                System.out.println(key);
+                if(p.hasPermission(key.toString())){
+                    rewardCoins = ConfigurationManager.permissionRewards.get(key);
+                }
+
+            }
+            lore = Arrays.asList((String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.daily-is-available"), (String) Votes.getConfigManager().getConfigurationEntry("config", "daily.item-middle.your-reward") + (Integer.parseInt(dailyStreak) + 1) * rewardCoins);
         }else{
 
             String dateNowString = sdf.format(new Date());

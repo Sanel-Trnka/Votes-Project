@@ -1,6 +1,7 @@
 package de.discordbot.listener;
 
 import de.discordbot.Votes;
+import de.discordbot.manager.ConfigurationManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -84,7 +85,18 @@ public class onInventoryClickListener implements Listener {
                         if (commandArray[i].equals("[NAME]")) {
                             commandArray[i] = p.getName();
                         } else if (commandArray[i].equals("[MONEY]")) {
-                            int reward = (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward") * dailyStreak;
+                            int rewardCoins = (Integer) Votes.getConfigManager().getConfigurationEntry("config", "daily.basic-reward");
+
+                            for(String key : ConfigurationManager.permissionRewards.keySet()){
+
+                                if(p.hasPermission(key.toString())){
+                                    Bukkit.getConsoleSender().sendMessage("Ja Moin!");
+                                    rewardCoins = ConfigurationManager.permissionRewards.get(key);
+                                }
+
+                            }
+
+                            int reward = rewardCoins * dailyStreak;
                             commandArray[i] = Integer.toString(reward);
                         }
 
